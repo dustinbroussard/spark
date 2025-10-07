@@ -1,0 +1,169 @@
+<!DOCTYPE html><html lang="en"><head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SparkSmith · Songwriting Prompt Builder</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+  <meta name="theme-color" content="#4f46e5">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icons/icon-192.png" sizes="192x192" type="image/png">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#eef2ff', 100: '#e0e7ff', 200: '#c7d2fe', 300: '#a5b4fc',
+              400: '#818cf8', 500: '#6366f1', 600: '#4f46e5', 700: '#4338ca',
+              800: '#3730a3', 900: '#312e81'
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+<link rel="stylesheet" href="style.css"></head>
+<body class="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-sky-50 dark:from-[#0b0c10] dark:via-[#0a0a0a] dark:to-[#0b0c10] text-neutral-900 dark:text-neutral-100">
+  <div class="max-w-6xl mx-auto p-6">
+    <header class="mb-6">
+      <div class="flex items-center justify-between card reveal-fade">
+        <div class="py-3">
+          <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight">SparkSmith <span class="text-brand-600">•</span> Songwriting Prompt Builder</h1>
+          <p class="text-sm opacity-80">Vibe-coded for Dustin • OpenRouter‑powered • Single-file HTML</p>
+        </div>
+        <div class="flex items-center gap-2">
+          <span class="badge">Local-first</span>
+          <span class="badge">No build tools</span>
+          <span class="badge hidden sm:inline-flex">Copy-ready</span>
+          <button id="themeToggle" class="btn btn-secondary" aria-label="Toggle theme" title="Toggle light/dark">
+            <span class="inline-block align-middle">
+              <span class="dark:hidden">🌙</span>
+              <span class="hidden dark:inline">☀️</span>
+            </span>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- API / Model -->
+    <section class="grid md:grid-cols-2 gap-4 mb-6">
+      <div class="card reveal-up">
+        <h2 class="font-bold mb-2">OpenRouter API</h2>
+        <label class="text-sm opacity-80">API Key (stored in your browser only)</label>
+        <div class="flex gap-2 mt-2">
+          <input id="apiKey" type="password" placeholder="sk-or-v1-..." class="flex-1">
+          <button id="saveKey" class="btn btn-secondary">Save</button>
+        </div>
+        <p class="text-xs mt-2 opacity-70">Get one at openrouter.ai • Your key never leaves this device except to call OpenRouter.</p>
+      </div>
+      <div class="card reveal-up" style="animation-delay:.06s">
+        <h2 class="font-bold mb-2">Model &amp; Settings</h2>
+        <div class="grid sm:grid-cols-2 gap-3">
+          <div>
+            <label class="text-sm opacity-80">Model</label>
+            <select id="model" class="mt-2">
+              <option value="qwen2.5:7b-instruct">Qwen2.5 7B Instruct (free)</option>
+              <option value="llama-3.1-8b-instruct">Llama 3.1 8B Instruct (free)</option>
+              <option value="mistral-nemo">Mistral Nemo (free)</option>
+              <option value="gemma2:9b-instruct">Gemma 2 9B Instruct (free)</option>
+            </select>
+          </div>
+          <div>
+            <label class="text-sm opacity-80">Temperature</label>
+            <input id="temperature" type="range" min="0" max="1" step="0.05" value="0.8" class="mt-3 w-full">
+            <div class="text-xs opacity-70">Creativity: <span id="tempVal">0.8</span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Seeds -->
+    <section class="card mb-6 reveal-up" style="animation-delay:.12s">
+      <h2 class="font-bold mb-3">Seeds &amp; Sources <span class="text-xs opacity-60">(toggle what to include)</span></h2>
+      <div class="grid lg:grid-cols-3 gap-4">
+        <div>
+          <label class="form-check">
+            <input id="useWeather" type="checkbox" class="chk switch"> <span>Today’s weather (geolocation)</span>
+          </label>
+          <label class="form-check mt-2">
+            <input id="useNews" type="checkbox" class="chk switch"> <span>Headlines (Hacker News front page)</span>
+          </label>
+          <label class="form-check mt-2">
+            <input id="useClock" type="checkbox" class="chk switch" checked> <span>Time &amp; weekday</span>
+          </label>
+          <label class="form-check mt-2">
+            <input id="useRandom" type="checkbox" class="chk switch" checked> <span>Random nouns / textures</span>
+          </label>
+        </div>
+        <div>
+          <label class="text-sm opacity-80">Manual seeds (anything: motifs, phrases, feelings)</label>
+          <textarea id="manualSeeds" rows="5" placeholder="e.g., pasta coma, cheap neon sign, wet asphalt, 'late plates and broken headlights'" class="mt-2"></textarea>
+        </div>
+        <div>
+          <label class="text-sm opacity-80">Style tags (comma-separated)</label>
+          <input id="styleTags" placeholder="HHR blues-rock, gritty, 12/8 swing, 86 bpm, slide guitar" class="mt-2">
+          <label class="text-sm opacity-80 mt-4 block">Prompt mode</label>
+          <select id="promptMode" class="mt-2 w-full">
+            <option value="lyric-brief">Structured Lyric Brief (JSON)</option>
+            <option value="direct-writer">Direct Writer Prompt (prose)</option>
+            <option value="title-pack">10 Title Sparks + 3 Briefs</option>
+          </select>
+        </div>
+      </div>
+    </section>
+
+    <!-- Actions -->
+    <section class="actions flex flex-wrap gap-3 mb-6 reveal-up" style="animation-delay:.18s">
+      <button id="gatherBtn" class="btn btn-secondary">Gather Seeds</button>
+      <button id="generateBtn" class="btn btn-primary">Generate with OpenRouter</button>
+      <button id="offlineBtn" class="btn btn-secondary">Generate Locally (no API)</button>
+    </section>
+
+    <!-- Output -->
+    <section class="grid lg:grid-cols-2 gap-4">
+      <div class="card reveal-up" style="animation-delay:.24s">
+        <h3 class="font-bold mb-2">Seed Preview</h3>
+        <pre id="seedPreview" class="mono text-sm whitespace-pre-wrap" aria-live="polite"></pre>
+      </div>
+      <div class="card reveal-up" style="animation-delay:.3s">
+        <div class="flex items-center justify-between mb-2">
+          <h3 class="font-bold">Result</h3>
+          <div class="flex gap-2">
+            <button id="copyText" class="btn btn-secondary text-xs" title="Copy the result as plain text">Copy Text</button>
+            <button id="copyJSON" class="btn btn-secondary text-xs" title="Copy the result as JSON">Copy JSON</button>
+          </div>
+        </div>
+        <pre id="result" class="mono text-sm whitespace-pre-wrap" aria-live="polite"></pre>
+      </div>
+    </section>
+
+    <!-- Install Banner -->
+    <div id="installBanner" class="install-banner hidden" role="dialog" aria-live="polite" aria-label="Install SparkSmith">
+      <div class="install-card card">
+        <div class="flex items-start justify-between gap-4">
+          <div>
+            <div class="font-bold mb-1">Install SparkSmith</div>
+            <div class="text-sm opacity-80">Add it to your home screen for a fast, offline experience.</div>
+          </div>
+          <div class="shrink-0 flex gap-2">
+            <button id="installAccept" class="btn btn-primary">Install</button>
+            <button id="installDismiss" class="btn btn-secondary">Not now</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <footer class="mt-8 text-xs opacity-60 text-center reveal-fade" style="animation-delay:.36s">
+      Built with love for spontaneous blues &amp; cosmic grit. Weather by <a class="underline" href="https://open-meteo.com/" target="_blank">Open‑Meteo</a>. Headlines by HN Algolia. No external build step.
+    </footer>
+  </div>
+
+
+
+
+<script src="script.js"></script></body></html>
